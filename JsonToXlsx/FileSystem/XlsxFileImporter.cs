@@ -42,7 +42,8 @@ namespace JsonToXlsx.FileSystem
                         jsonTextFile.JsonDialogueLines.Add(new JsonDialogueLine
                         {
                             Key = sheet.GetRow(row).GetCell(0).StringCellValue,
-                            Text = sheet.GetRow(row).GetCell(2)?.StringCellValue ?? sheet.GetRow(row).GetCell(1).StringCellValue
+                            Text = sheet.GetRow(row).GetCell(2)?.StringCellValue ??
+                                   sheet.GetRow(row).GetCell(1).StringCellValue
                         });
                     }
 
@@ -59,6 +60,49 @@ namespace JsonToXlsx.FileSystem
             });
 
             return jsonTextFiles;
+        }
+
+        public static ProgressStatistics GetProgressStatistics(string baseFolderPath, string folderPath)
+        {
+            var filePaths = Directory.GetFiles(baseFolderPath + folderPath, "*.xlsx");
+
+            var progressStatistics = new ProgressStatistics {TotalLineCount = 0, TranslatedLineCount = 0};
+
+            foreach (var filePath in filePaths)
+            {
+                XSSFWorkbook workbook;
+                using (FileStream file = new FileStream(filePath, FileMode.Open, FileAccess.Read))
+                {
+                    workbook = new XSSFWorkbook(file);
+                }
+
+                for (int i = 0; i < workbook.NumberOfSheets; i++)
+                {
+                    var sheet = workbook.GetSheetAt(i);
+
+                    for (int row = 1; row <= sheet.LastRowNum; row++)
+                    {
+                        progressStatistics.TotalLineCount++;
+                        if (sheet.GetRow(row).GetCell(2)?.StringCellValue != null)
+                        {
+                            progressStatistics.TranslatedLineCount++;
+                        }
+                    }
+                }
+            }
+
+            var dirs = Directory.GetDirectories(baseFolderPath + folderPath, "*");
+
+            foreach (var dir in dirs)
+            {
+                var folderProgress = GetProgressStatistics(baseFolderPath,
+                    dir.Replace(baseFolderPath, string.Empty, StringComparison.Ordinal));
+
+                progressStatistics.TotalLineCount += folderProgress.TotalLineCount;
+                progressStatistics.TranslatedLineCount += folderProgress.TranslatedLineCount;
+            }
+
+            return progressStatistics;
         }
     }
 }
