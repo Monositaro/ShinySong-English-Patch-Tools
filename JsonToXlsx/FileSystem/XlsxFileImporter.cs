@@ -39,12 +39,18 @@ namespace JsonToXlsx.FileSystem
 
                     for (int row = 1; row <= sheet.LastRowNum; row++)
                     {
-                        jsonTextFile.JsonDialogueLines.Add(new JsonDialogueLine
+                        var key = sheet.GetRow(row)?.GetCell(0)?.StringCellValue;
+                        var text = sheet.GetRow(row)?.GetCell(2)?.StringCellValue ??
+                                   sheet.GetRow(row)?.GetCell(1)?.StringCellValue;
+
+                        if (!string.IsNullOrEmpty(key))
                         {
-                            Key = sheet.GetRow(row).GetCell(0).StringCellValue,
-                            Text = sheet.GetRow(row).GetCell(2)?.StringCellValue ??
-                                   sheet.GetRow(row).GetCell(1).StringCellValue
-                        });
+                            jsonTextFile.JsonDialogueLines.Add(new JsonDialogueLine
+                            {
+                                Key = key,
+                                Text = text
+                            });
+                        }
                     }
 
                     jsonTextFiles.Add(jsonTextFile);
@@ -85,12 +91,17 @@ namespace JsonToXlsx.FileSystem
 
                     for (int row = 1; row <= sheet.LastRowNum; row++)
                     {
-                        progressLineStatistics.Add(new ProgressLineStatistics
+                        var key = sheet.GetRow(row)?.GetCell(0)?.StringCellValue;
+
+                        if (!string.IsNullOrEmpty(key))
                         {
-                            FileName = sheetName,
-                            FileSystemEncoding = fileSystemEncoding,
-                            IsTranslated = !string.IsNullOrEmpty(sheet.GetRow(row).GetCell(2)?.StringCellValue)
-                        });
+                            progressLineStatistics.Add(new ProgressLineStatistics
+                            {
+                                FileName = sheetName,
+                                FileSystemEncoding = fileSystemEncoding,
+                                IsTranslated = !string.IsNullOrEmpty(sheet.GetRow(row).GetCell(2)?.StringCellValue)
+                            });
+                        }
                     }
                 }
             }
