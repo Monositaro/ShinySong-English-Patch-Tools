@@ -35,10 +35,7 @@ namespace JsonToXlsx
 
                 if (string.Equals(operation, "1"))
                 {
-                    var jsonFiles =
-                        JsonFileImporter.ImportJsonTextFiles(
-                            baseInputFolder, string.Empty);
-
+                    var jsonFiles = JsonFileImporter.ImportJsonTextFiles(baseInputFolder, string.Empty);
                     XlsxFileExporter.ExportXlsxFiles(jsonFiles, baseOutputFolderPath);
                 }
                 else if (string.Equals(operation, "2"))
@@ -49,13 +46,7 @@ namespace JsonToXlsx
                 else if (string.Equals(operation, "3"))
                 {
                     var progressStatistics = XlsxFileImporter.GetProgressStatistics(baseInputFolder, string.Empty);
-                    var translationProgress = Convert.ToDecimal(progressStatistics.TranslatedLineCount) /
-                                              Convert.ToDecimal(progressStatistics.TotalLineCount);
-
-                    Console.WriteLine();
-                    Console.WriteLine($"Translated Line Count: {progressStatistics.TranslatedLineCount}");
-                    Console.WriteLine($"Total Line Count:      {progressStatistics.TotalLineCount}");
-                    Console.WriteLine($"Translation Progress:  {translationProgress:P}");
+                    StatisticsExporter.ExportStatistics(progressStatistics);
                 }
 
                 Console.WriteLine();

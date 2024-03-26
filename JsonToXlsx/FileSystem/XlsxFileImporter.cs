@@ -62,31 +62,35 @@ namespace JsonToXlsx.FileSystem
             return jsonTextFiles;
         }
 
-        public static ProgressStatistics GetProgressStatistics(string baseFolderPath, string folderPath)
+        public static List<ProgressLineStatistics> GetProgressStatistics(string baseFolderPath, string folderPath)
         {
             var filePaths = Directory.GetFiles(baseFolderPath + folderPath, "*.xlsx");
 
-            var progressStatistics = new ProgressStatistics {TotalLineCount = 0, TranslatedLineCount = 0};
+            var progressLineStatistics = new List<ProgressLineStatistics>();
 
             foreach (var filePath in filePaths)
             {
                 XSSFWorkbook workbook;
-                using (FileStream file = new FileStream(filePath, FileMode.Open, FileAccess.Read))
+                using (var file = new FileStream(filePath, FileMode.Open, FileAccess.Read))
                 {
                     workbook = new XSSFWorkbook(file);
                 }
 
+                var fileSystemEncoding = GetFileSystemEncoding(folderPath);
+
                 for (int i = 0; i < workbook.NumberOfSheets; i++)
                 {
                     var sheet = workbook.GetSheetAt(i);
+                    var sheetName = sheet.SheetName;
 
                     for (int row = 1; row <= sheet.LastRowNum; row++)
                     {
-                        progressStatistics.TotalLineCount++;
-                        if (sheet.GetRow(row).GetCell(2)?.StringCellValue != null)
+                        progressLineStatistics.Add(new ProgressLineStatistics
                         {
-                            progressStatistics.TranslatedLineCount++;
-                        }
+                            FileName = sheetName,
+                            FileSystemEncoding = fileSystemEncoding,
+                            IsTranslated = !string.IsNullOrEmpty(sheet.GetRow(row).GetCell(2)?.StringCellValue)
+                        });
                     }
                 }
             }
@@ -98,11 +102,86 @@ namespace JsonToXlsx.FileSystem
                 var folderProgress = GetProgressStatistics(baseFolderPath,
                     dir.Replace(baseFolderPath, string.Empty, StringComparison.Ordinal));
 
-                progressStatistics.TotalLineCount += folderProgress.TotalLineCount;
-                progressStatistics.TranslatedLineCount += folderProgress.TranslatedLineCount;
+                progressLineStatistics.AddRange(folderProgress);
             }
 
-            return progressStatistics;
+            return progressLineStatistics;
+        }
+
+        private static FileSystemEncoding GetFileSystemEncoding(string folderPath)
+        {
+            if (folderPath.Contains(FileSystemEncoding.ProduceEpisodeCommu.Value, StringComparison.OrdinalIgnoreCase))
+            {
+                return FileSystemEncoding.ProduceEpisodeCommu;
+            }
+
+            if (folderPath.Contains(FileSystemEncoding.ProduceEpisodeIdolBanter.Value,
+                StringComparison.OrdinalIgnoreCase))
+            {
+                return FileSystemEncoding.ProduceEpisodeIdolBanter;
+            }
+
+            if (folderPath.Contains(FileSystemEncoding.ProduceEpisodeUnitBanter.Value,
+                StringComparison.OrdinalIgnoreCase))
+            {
+                return FileSystemEncoding.ProduceEpisodeUnitBanter;
+            }
+
+            if (folderPath.Contains(FileSystemEncoding.ProduceSubSeasonIdolSelectionCommu.Value,
+                StringComparison.OrdinalIgnoreCase))
+            {
+                return FileSystemEncoding.ProduceSubSeasonIdolSelectionCommu;
+            }
+
+            if (folderPath.Contains(FileSystemEncoding.ProduceSubSeasonIdolCommu.Value,
+                StringComparison.OrdinalIgnoreCase))
+            {
+                return FileSystemEncoding.ProduceSubSeasonIdolCommu;
+            }
+
+            if (folderPath.Contains(FileSystemEncoding.ProduceIdolCardCommu.Value, StringComparison.OrdinalIgnoreCase))
+            {
+                return FileSystemEncoding.ProduceIdolCardCommu;
+            }
+
+            if (folderPath.Contains(FileSystemEncoding.SupportCharacterCardCommu.Value,
+                StringComparison.OrdinalIgnoreCase))
+            {
+                return FileSystemEncoding.SupportCharacterCardCommu;
+            }
+
+            if (folderPath.Contains(FileSystemEncoding.UnitMainStoryCommu.Value, StringComparison.OrdinalIgnoreCase))
+            {
+                return FileSystemEncoding.UnitMainStoryCommu;
+            }
+
+            if (folderPath.Contains(FileSystemEncoding.IdolStoryCommu.Value, StringComparison.OrdinalIgnoreCase))
+            {
+                return FileSystemEncoding.IdolStoryCommu;
+            }
+
+            if (folderPath.Contains(FileSystemEncoding.EventCommu.Value, StringComparison.OrdinalIgnoreCase))
+            {
+                return FileSystemEncoding.EventCommu;
+            }
+
+            if (folderPath.Contains(FileSystemEncoding.OurStreamIntroductionCommu.Value,
+                StringComparison.OrdinalIgnoreCase))
+            {
+                return FileSystemEncoding.OurStreamIntroductionCommu;
+            }
+
+            if (folderPath.Contains(FileSystemEncoding.BirthdayCommu.Value, StringComparison.OrdinalIgnoreCase))
+            {
+                return FileSystemEncoding.BirthdayCommu;
+            }
+
+            if (folderPath.Contains(FileSystemEncoding.TutorialCommu.Value, StringComparison.OrdinalIgnoreCase))
+            {
+                return FileSystemEncoding.TutorialCommu;
+            }
+
+            return FileSystemEncoding.Undefined;
         }
     }
 }

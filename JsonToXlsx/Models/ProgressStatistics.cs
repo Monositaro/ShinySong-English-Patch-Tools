@@ -1,8 +1,9 @@
 ﻿namespace JsonToXlsx.Models
 {
-    public class ProgressStatistics
+    public class ProgressLineStatistics
     {
-        public int TotalLineCount { get; set; }
-        public int TranslatedLineCount { get; set; }
+        public FileSystemEncoding FileSystemEncoding { get; set; }
+        public string FileName { get; set; }
+        public bool IsTranslated { get; set; }
     }
 }
